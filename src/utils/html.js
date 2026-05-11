@@ -6,3 +6,5 @@ export function escapeHtml(s) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
+
+// npm start 
