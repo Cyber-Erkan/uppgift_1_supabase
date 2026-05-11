@@ -59,11 +59,35 @@ export async function listMessages(req, res) {
       <div><strong>#${row.id}</strong> · ${when}</div>
       <div><strong>${n}</strong></div>
       <div>${m}</div>
-      <div style="margin-top:8px"><a href="/messages/${row.id}/edit">✏️ Redigera</a></div>
+      <div style="margin-top:8px;display:flex;gap:12px">
+        <a href="/messages/${row.id}/edit">✏️ Redigera</a>
+        <form method="POST" action="/messages/${row.id}/delete" style="margin:0" onsubmit="return confirm('Ta bort meddelande #${row.id}?')">
+          <button type="submit" style="background:none;border:none;padding:0;cursor:pointer;font:inherit;color:#c00">🗑️ Ta bort</button>
+        </form>
+      </div>
     </li>`;
   }).join('');
 
   res.type('html').send(renderMessagesPage({ itemsHtml }));
+}
+
+export async function deleteMessage(req, res) {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).type('html').send('<p>Ogiltigt ID.</p><p><a href="/messages">Tillbaka</a></p>');
+  }
+
+  const { error } = await supabase
+    .from('request_messages')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('[supabase] delete error:', error);
+    return res.status(500).type('html').send('<p>Serverfel vid borttagning.</p><p><a href="/messages">Tillbaka</a></p>');
+  }
+
+  res.redirect('/messages');
 }
 
 export async function showEdit(req, res) {
